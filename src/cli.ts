@@ -110,7 +110,7 @@ async function main(): Promise<void> {
           'install [dir]': 'Install specify skills + commands into Claude/Cursor/Codex',
         },
         note: 'reverse / build / verify-judgment / reflect are AI tasks — run the `specify` skill in your agent. The CLI prepares the deterministic dossier; the skill does the reasoning.',
-        version: '0.3.0',
+        version: '0.4.0',
       });
     }
   }

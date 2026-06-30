@@ -3,7 +3,7 @@ name: specify
 description: Spec-driven development — reverse-engineer behavioral specs from code, scaffold code from specs, verify code↔spec conformance, and reflect on a spec before coding. A spec is "a codebase without the code": README + trigger-keyed files describing WHAT a system does, never HOW. Use when writing/validating behavioral specs, generating a spec from existing code, building code from a spec, or checking that code still matches its spec.
 metadata:
   type: workflow
-  version: 0.3.0
+  version: 0.4.0
   keywords:
     - spec
     - specification
@@ -77,10 +77,13 @@ graphify ./src                       # → graphify-out/graph.json
 specify reverse ./src --graph ./graphify-out/graph.json
 ```
 
-Then, as the agent: for each cluster in the dossier, **write one behavioral spec
-file** describing what those symbols do — strip every code reference, add a
-`triggers:` array, link the files under a root README. Finish with
-`specify spec validate <dir>` (must pass).
+Then, as the agent: **write the spec into a `specs/` directory at the root of
+the project being analyzed** — `specs/<subsystem>/` (the dossier's `spec_dir`
+field gives the exact path; never write specs into the specify package itself or
+into `examples/`). For each cluster, write one behavioral spec file describing
+what those symbols do — strip every code reference, add a `triggers:` array, link
+the files under a root README. Finish with `specify spec validate ./specs/<subsystem>`
+(must pass).
 
 ### 2. Spec → code (build)
 

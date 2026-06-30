@@ -32,10 +32,20 @@ export interface ReverseDossier {
   command: 'reverse';
   graph: string | null;
   code_dir: string;
+  /** Where the AI MUST write the spec: a specs/ dir at the project root. Always set. */
+  spec_dir: string;
   total_symbols: number;
   clusters: ReverseCluster[];
   instructions: string[];
   message?: string;
+}
+
+/** The spec destination for a code dir: always `<project-root>/specs`. */
+function specsDirFor(codeDir: string): string {
+  // If codeDir looks like a source subdir (src, lib, app…), specs/ lives beside it at the root.
+  const base = path.basename(codeDir);
+  const root = ['src', 'lib', 'app', 'source'].includes(base) ? path.dirname(codeDir) : codeDir;
+  return path.join(root, 'specs');
 }
 
 function findGraph(codeDir: string, explicit?: string): string | null {
@@ -50,19 +60,21 @@ function findGraph(codeDir: string, explicit?: string): string | null {
 }
 
 const REVERSE_INSTRUCTIONS = [
+  'Write the spec into a `specs/` directory at the ROOT of the project being analyzed (e.g. specs/<subsystem>/) — never anywhere else. This is always the destination.',
   'For each cluster, write one behavioral spec file describing WHAT those symbols do — never HOW.',
   'Strip all code: no file paths, function names, class names, types, or imports in the spec.',
   'Give each spec file a frontmatter `triggers:` array — the phrases a developer/AI would use to ask about this behavior.',
   'Group related clusters under a root README.md that links to the aspect files and states invariants.',
-  'Run `specify spec validate <dir>` on the result — it must pass with no errors.',
+  'Run `specify spec validate ./specs/<subsystem>` on the result — it must pass with no errors.',
 ];
 
 export function reverseDossier(codeDir: string, opts: { graphPath?: string } = {}): ReverseDossier {
   const absCode = path.resolve(codeDir);
+  const specDir = specsDirFor(absCode);
   const graphPath = findGraph(absCode, opts.graphPath);
   if (!graphPath) {
     return {
-      status: 'error', command: 'reverse', graph: null, code_dir: absCode,
+      status: 'error', command: 'reverse', graph: null, code_dir: absCode, spec_dir: specDir,
       total_symbols: 0, clusters: [], instructions: REVERSE_INSTRUCTIONS,
       message: 'No graph.json found. Run graphify on the code first (graphify skill), or pass --graph <path>.',
     };
@@ -73,7 +85,7 @@ export function reverseDossier(codeDir: string, opts: { graphPath?: string } = {
     nodes = loadGraph(graphPath);
   } catch (err) {
     return {
-      status: 'error', command: 'reverse', graph: graphPath, code_dir: absCode,
+      status: 'error', command: 'reverse', graph: graphPath, code_dir: absCode, spec_dir: specDir,
       total_symbols: 0, clusters: [], instructions: REVERSE_INSTRUCTIONS,
       message: String(err instanceof Error ? err.message : err),
     };
@@ -95,7 +107,7 @@ export function reverseDossier(codeDir: string, opts: { graphPath?: string } = {
     .sort((a, b) => b.symbols.length - a.symbols.length);
 
   return {
-    status: 'ok', command: 'reverse', graph: graphPath, code_dir: absCode,
+    status: 'ok', command: 'reverse', graph: graphPath, code_dir: absCode, spec_dir: specDir,
     total_symbols: nodes.length, clusters, instructions: REVERSE_INSTRUCTIONS,
   };
 }

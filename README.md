@@ -11,12 +11,59 @@ and verify code still matches its spec — so an update never silently breaks
 behavior. From a complete spec you could rebuild the project and get the same
 functionality.
 
-```bash
-# install the skill + /specify command into your AI tool (Claude / Cursor / Codex)
-npx @docsbook/specify install
+## Quick Start — copy, paste, see the result
 
-# or use the CLI directly
-npx @docsbook/specify spec validate ./specs/my-module
+### ▸ I have a project. Give me specs.
+
+```bash
+# 1. build a knowledge graph of your code (one-time, via the graphify skill)
+npx graphify ./src
+
+# 2. get the spec dossier — your code, clustered into behaviors
+npx @docsbook/specify reverse ./src --graph ./graphify-out/graph.json
+```
+
+```jsonc
+// ← what you get back (real output on this repo): 2686 symbols → 281 behavior clusters
+{ "status": "ok", "total_symbols": 2686, "clusters": [
+  { "community": 1, "files": ["...7 files..."], "symbols": [ /* 90 symbols */ ] },
+  ...
+] }
+```
+
+Then ask your AI tool: **“turn this dossier into specs.”** Each cluster becomes
+one code-free spec file. Or just run `/specify reverse ./src` and the skill does
+all of it — graph, dossier, and the spec files.
+
+### ▸ I only have an idea. No code yet.
+
+```bash
+npx @docsbook/specify new "URL shortener with click analytics" --dir ./specs/urls
+```
+
+```jsonc
+{ "status": "ok", "command": "new", "spec_dir": "./specs/urls",
+  "created": ["./specs/urls/README.md"] }   // ← a valid, code-free spec skeleton
+```
+
+Then ask your AI tool to expand the idea into behaviors — then `build` generates
+the code. Writing the spec first is **cheaper than refactoring later**.
+
+### ▸ Did my code drift from its spec?
+
+```bash
+npx @docsbook/specify verify ./specs/urls --graph ./graphify-out/graph.json
+```
+
+```jsonc
+{ "status": "drift", "total_triggers": 27, "covered": 23, "uncovered": 4 }
+// ← 4 behaviors the spec promises that have no matching code — your drift signal
+```
+
+### ▸ Just wire it into my AI tool
+
+```bash
+npx @docsbook/specify install     # → /specify in Claude Code, Cursor, or Codex
 ```
 
 ---
