@@ -1,0 +1,60 @@
+{
+  "name": "@docsbook/specify",
+  "version": "0.2.0",
+  "description": "Spec-driven CLI: reverse-engineer specs from code, verify code against specs, scaffold code from specs",
+  "type": "module",
+  "bin": {
+    "specify": "./bin/specify"
+  },
+  "main": "./dist/cli.js",
+  "scripts": {
+    "build": "tsc",
+    "build-index": "node scripts/build-index.cjs",
+    "prepare": "pnpm build",
+    "prepublishOnly": "pnpm build"
+  },
+  "files": [
+    "dist/",
+    "bin/",
+    "skills/",
+    "commands/",
+    "scripts/",
+    "install.cjs",
+    "README.md",
+    "LICENSE",
+    "examples/"
+  ],
+  "dependencies": {
+    "gray-matter": "^4.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.5.0"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "spec",
+    "specification",
+    "code-generation",
+    "verify",
+    "ai",
+    "claude",
+    "docs",
+    "docsbook"
+  ],
+  "author": "Dan Bondarev",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Docsbook-io/specify.git"
+  },
+  "homepage": "https://github.com/Docsbook-io/specify#readme",
+  "bugs": {
+    "url": "https://github.com/Docsbook-io/specify/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
