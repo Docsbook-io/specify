@@ -18,6 +18,7 @@ import fs from 'fs';
 import path from 'path';
 import { collectTriggers } from './spec/triggers.js';
 import { loadGraph, type GraphNode } from './graph/graphify.js';
+import { scanCodeAsNodes } from './graph/codescan.js';
 
 // ── reverse: code → spec dossier ─────────────────────────────────────────────
 
@@ -30,6 +31,8 @@ export interface ReverseCluster {
 export interface ReverseDossier {
   status: 'ok' | 'error';
   command: 'reverse';
+  /** 'graphify' when a graph was used (richer clusters), 'codescan' for the zero-setup fallback. */
+  mode: 'graphify' | 'codescan';
   graph: string | null;
   code_dir: string;
   /** Where the AI MUST write the spec: a specs/ dir at the project root. Always set. */
@@ -37,6 +40,7 @@ export interface ReverseDossier {
   total_symbols: number;
   clusters: ReverseCluster[];
   instructions: string[];
+  hint?: string;
   message?: string;
 }
 
@@ -72,43 +76,57 @@ export function reverseDossier(codeDir: string, opts: { graphPath?: string } = {
   const absCode = path.resolve(codeDir);
   const specDir = specsDirFor(absCode);
   const graphPath = findGraph(absCode, opts.graphPath);
-  if (!graphPath) {
-    return {
-      status: 'error', command: 'reverse', graph: null, code_dir: absCode, spec_dir: specDir,
-      total_symbols: 0, clusters: [], instructions: REVERSE_INSTRUCTIONS,
-      message: 'No graph.json found. Run graphify on the code first (graphify skill), or pass --graph <path>.',
-    };
-  }
 
   let nodes: GraphNode[];
-  try {
-    nodes = loadGraph(graphPath);
-  } catch (err) {
-    return {
-      status: 'error', command: 'reverse', graph: graphPath, code_dir: absCode, spec_dir: specDir,
-      total_symbols: 0, clusters: [], instructions: REVERSE_INSTRUCTIONS,
-      message: String(err instanceof Error ? err.message : err),
-    };
+  let mode: 'graphify' | 'codescan';
+  let hint: string | undefined;
+
+  if (graphPath) {
+    try {
+      nodes = loadGraph(graphPath);
+      mode = 'graphify';
+    } catch (err) {
+      return {
+        status: 'error', command: 'reverse', mode: 'graphify', graph: graphPath, code_dir: absCode, spec_dir: specDir,
+        total_symbols: 0, clusters: [], instructions: REVERSE_INSTRUCTIONS,
+        message: String(err instanceof Error ? err.message : err),
+      };
+    }
+  } else {
+    // Zero-setup fallback: scan the code directly. graphify stays optional.
+    if (!fs.existsSync(absCode) || !fs.statSync(absCode).isDirectory()) {
+      return {
+        status: 'error', command: 'reverse', mode: 'codescan', graph: null, code_dir: absCode, spec_dir: specDir,
+        total_symbols: 0, clusters: [], instructions: REVERSE_INSTRUCTIONS,
+        message: `Code directory does not exist: ${absCode}`,
+      };
+    }
+    nodes = scanCodeAsNodes(absCode);
+    mode = 'codescan';
+    hint = 'codescan mode (no graphify): clusters are grouped by directory, not by call-graph community. For semantically tighter clusters run `graphify <code>` and re-run reverse.';
   }
 
-  // Group nodes by graphify community (its semantic clustering of the codebase).
-  const byCommunity = new Map<number, GraphNode[]>();
+  // Cluster: by graphify community when present, else by source directory.
+  const byKey = new Map<string, GraphNode[]>();
   for (const n of nodes) {
-    const c = (n as GraphNode & { community?: number }).community ?? -1;
-    (byCommunity.get(c) ?? byCommunity.set(c, []).get(c)!).push(n);
+    const key = mode === 'graphify'
+      ? String((n as GraphNode & { community?: number }).community ?? -1)
+      : path.dirname(n.source_file ?? '.');
+    (byKey.get(key) ?? byKey.set(key, []).get(key)!).push(n);
   }
 
-  const clusters: ReverseCluster[] = [...byCommunity.entries()]
-    .map(([community, ns]) => ({
-      community,
+  const clusters: ReverseCluster[] = [...byKey.entries()]
+    .map(([key, ns], i) => ({
+      community: mode === 'graphify' ? Number(key) : i,
       files: [...new Set(ns.map(n => n.source_file).filter((f): f is string => !!f))],
       symbols: ns.map(n => ({ label: n.label, source_file: n.source_file, source_location: n.source_location })),
     }))
     .sort((a, b) => b.symbols.length - a.symbols.length);
 
   return {
-    status: 'ok', command: 'reverse', graph: graphPath, code_dir: absCode, spec_dir: specDir,
+    status: 'ok', command: 'reverse', mode, graph: graphPath, code_dir: absCode, spec_dir: specDir,
     total_symbols: nodes.length, clusters, instructions: REVERSE_INSTRUCTIONS,
+    ...(hint ? { hint } : {}),
   };
 }
 

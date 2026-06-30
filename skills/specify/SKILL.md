@@ -3,7 +3,7 @@ name: specify
 description: Spec-driven development — a spec is "a codebase without the code": README + trigger-keyed files describing WHAT a system does, never HOW. USE THIS AUTOMATICALLY (no command needed) whenever a project has a specs/ directory and the user asks to add/change/fix/build any behavior: consult the spec first, reflect and ask if it's unclear, implement honoring its invariants, then update the spec in the same change — the user should not have to mention specs or say "update the spec". Also use to generate specs from existing code (reverse), scaffold a spec from an idea before any code (new), build code from a spec, verify code↔spec conformance, or validate spec structure.
 metadata:
   type: workflow
-  version: 0.5.0
+  version: 0.6.0
   keywords:
     - spec
     - specification
@@ -98,11 +98,16 @@ with `specify spec validate` (must pass), then `specify build` to scaffold code.
 ### 1. Code → spec (reverse)
 
 ```bash
-# (a) build a knowledge graph of the code — use the graphify skill
-graphify ./src                       # → graphify-out/graph.json
-# (b) get the clustered dossier (symbols grouped by graphify community)
-specify reverse ./src --graph ./graphify-out/graph.json
+# Zero setup — scans the code directly (mode: codescan), works offline:
+specify reverse ./src
+# Booster (optional) — a graphify graph gives tighter, deduped clusters:
+graphify ./src && specify reverse ./src --graph ./graphify-out/graph.json
 ```
+
+graphify is an **optional accelerator**, not a requirement: without it `reverse`
+falls back to a direct code scan and clusters by directory; with it, clusters
+come from the call-graph community. The dossier's `mode` field tells you which
+ran, and `hint` says when graphify would help.
 
 Then, as the agent: **write the spec into a `specs/` directory at the root of
 the project being analyzed** — `specs/<subsystem>/` (the dossier's `spec_dir`
@@ -125,11 +130,14 @@ behavior the spec omits. Confirm with `specify verify` (step 4).
 ### 3. Verify code ↔ spec conformance
 
 ```bash
-specify verify ./specs/my-feature --graph ./graphify-out/graph.json
+specify verify ./specs/my-feature                              # zero setup (mode: codescan)
+specify verify ./specs/my-feature --graph ./graphify-out/graph.json   # booster (mode: graphify)
 ```
 
 The CLI returns a **coverage map**: every spec trigger lexically matched against
-graphify code-graph nodes (threshold 0.5, like docs-drift). `covered` triggers
+code symbols (threshold 0.5, like docs-drift). With no graphify graph it scans
+the code directly (`mode: codescan`); with one it uses the richer graph
+(`mode: graphify`). graphify is optional — it lifts coverage, it isn't required. `covered` triggers
 have a plausible implementation site; **`uncovered` triggers are the drift
 signal** — a behavior the spec promises with no matching code, or spec text too
 vague to match a symbol. Then, as the agent: open the matched code for each

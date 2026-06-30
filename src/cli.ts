@@ -64,9 +64,9 @@ async function main(): Promise<void> {
     }
 
     case 'verify': {
-      if (!sub) { out({ status: 'error', message: 'Usage: specify verify <spec-dir> [--graph <graph.json>] [--threshold <n>]' }); process.exit(1); }
+      if (!sub) { out({ status: 'error', message: 'Usage: specify verify <spec-dir> [--graph <graph.json>] [--code <dir>] [--threshold <n>]' }); process.exit(1); }
       const thr = flag('threshold');
-      const result = verifySpec(sub, { graphPath: flag('graph'), threshold: thr ? Number(thr) : undefined });
+      const result = verifySpec(sub, { graphPath: flag('graph'), codeDir: flag('code'), threshold: thr ? Number(thr) : undefined });
       out(result);
       if (result.status === 'error') process.exit(1);
       break;
@@ -110,7 +110,7 @@ async function main(): Promise<void> {
           'install [dir]': 'Install specify skills + commands into Claude/Cursor/Codex',
         },
         note: 'reverse / build / verify-judgment / reflect are AI tasks — run the `specify` skill in your agent. The CLI prepares the deterministic dossier; the skill does the reasoning.',
-        version: '0.5.0',
+        version: '0.6.0',
       });
     }
   }

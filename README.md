@@ -64,6 +64,34 @@ day-to-day use, you never need it.
 
 ---
 
+## Works with zero setup — graphify & embeddings are optional boosters
+
+Everything above runs out of the box. Two integrations are **opt-in upgrades** —
+you choose if and when the extra accuracy is worth a one-time setup step.
+
+| Capability | ✅ Zero setup (default) | ⚡ With the booster |
+|---|---|---|
+| **Match spec ↔ code** (`reverse`, `verify`) | **codescan** — scans your source for declared symbols directly. No install, no build, works offline. | **[graphify](https://www.npmjs.com/package/graphify)** — a parser-built code graph: deduped symbols, call-graph clustering. Tighter clusters, usually higher coverage. Run `graphify ./src` once. |
+| **Search a large spec** | **markdown-lsp full-text / fuzzy** — instant, no API key: `markdown-lsp search-text ./specs "quota"`. | **[markdown-lsp](https://www.npmjs.com/package/markdown-lsp) semantic-search** — embedding-backed meaning search (finds "rate limit" from "too many requests"). One `index` step + an API key. |
+
+How the choice surfaces in practice:
+
+```bash
+# default — no graphify needed, runs anywhere
+specify verify ./specs/billing
+# → { "mode": "codescan", "covered": 7, "total_triggers": 7, ... }
+
+# booster — if a graphify graph exists, specify uses it automatically
+graphify ./src && specify verify ./specs/billing
+# → { "mode": "graphify", ... }   ← tighter symbols, the hint tells you when it helps
+```
+
+You never get blocked waiting on setup: specify picks the **best surface that's
+available** and tells you (`mode` + `hint`) when a booster would improve the
+result. Add graphify or embeddings only when you want the extra precision.
+
+---
+
 ## What is a spec?
 
 A spec is a folder of markdown describing what a system **does** — its
