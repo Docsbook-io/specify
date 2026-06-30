@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-06-30T10:09:24.610Z",
+  "generated_at": "2026-06-30T10:23:15.566Z",
   "skills": [
     {
       "name": "specify",
-      "description": "Spec-driven development — reverse-engineer behavioral specs from code, scaffold code from specs, verify code↔spec conformance, and reflect on a spec before coding. A spec is \"a codebase without the code\": README + trigger-keyed files describing WHAT a system does, never HOW. Use when writing/validating behavioral specs, generating a spec from existing code, building code from a spec, or checking that code still matches its spec.",
+      "description": "Spec-driven development — a spec is \"a codebase without the code\": README + trigger-keyed files describing WHAT a system does, never HOW. USE THIS AUTOMATICALLY (no command needed) whenever a project has a specs/ directory and the user asks to add/change/fix/build any behavior: consult the spec first, reflect and ask if it's unclear, implement honoring its invariants, then update the spec in the same change — the user should not have to mention specs or say \"update the spec\". Also use to generate specs from existing code (reverse), scaffold a spec from an idea before any code (new), build code from a spec, verify code↔spec conformance, or validate spec structure.",
       "raw_url": "https://raw.githubusercontent.com/Docsbook-io/specify/main/skills/specify/SKILL.md",
       "github_url": "https://github.com/Docsbook-io/specify/blob/main/skills/specify/SKILL.md"
     }

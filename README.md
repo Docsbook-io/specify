@@ -11,60 +11,56 @@ and verify code still matches its spec — so an update never silently breaks
 behavior. From a complete spec you could rebuild the project and get the same
 functionality.
 
-## Quick Start — copy, paste, see the result
-
-### ▸ I have a project. Give me specs.
+## Quick Start — install once, then just ask
 
 ```bash
-# 1. build a knowledge graph of your code (one-time, via the graphify skill)
-npx graphify ./src
-
-# 2. get the spec dossier — your code, clustered into behaviors
-npx @docsbook/specify reverse ./src --graph ./graphify-out/graph.json
+npx @docsbook/specify install     # adds the skill + /specify to Claude Code, Cursor, or Codex
 ```
 
-```jsonc
-// ← what you get back (real output on this repo): 2686 symbols → 281 behavior clusters
-{ "status": "ok", "total_symbols": 2686, "clusters": [
-  { "community": 1, "files": ["...7 files..."], "symbols": [ /* 90 symbols */ ] },
-  ...
-] }
+That's it. Now talk to your AI tool in plain language. Once a `specs/` directory
+exists, **specify works under the hood on its own** — you never run a command or
+say "update the spec".
+
+### The everyday loop — you just ask for the feature
+
+```
+You:  "Add team invites with role-based access."
+
+AI:   (silently, before touching code)
+      1. reads the spec for the area you're changing
+      2. ⚠️ "The auth spec says viewers can't see billing — should an invited
+          admin? The spec is silent on invite expiry. Confirm before I build."
+      3. implements it, honoring every invariant the spec locked in
+      4. updates specs/ in the same change so the spec never lags the code
 ```
 
-Then ask your AI tool: **“turn this dossier into specs.”** Each cluster becomes
-one code-free spec file. Or just run `/specify reverse ./src` and the skill does
-all of it — graph, dossier, and the spec files.
+You asked for a feature. The AI consulted the spec, **reflected and asked the
+right questions first**, built it without breaking a stated behavior, and kept
+the spec in sync — all without you mentioning specs once.
 
-### ▸ I only have an idea. No code yet.
+### First time? Bootstrap the spec, then forget about it
 
-```bash
-npx @docsbook/specify new "URL shortener with click analytics" --dir ./specs/urls
+| You have… | Just say to your AI tool |
+|---|---|
+| **A project, no specs yet** | *“Generate specs for this project.”* → it graphs your code, clusters it into behaviors, writes one code-free spec per subsystem into `specs/`. From then on, the loop above runs automatically. |
+| **Only an idea, no code yet** | *“I want to build a URL shortener with click analytics.”* → it writes the spec **first**, asks what's ambiguous, then *“build it”* generates code from the agreed spec. |
+
+> **Why spec-first is cheaper:** the spec is *a codebase without the code* — write
+> it once, and every future change is checked against it instead of discovered in
+> production. The AI reflecting against a spec before coding catches the broken
+> contract while it's still a question, not a bug.
+
+A spec lands as plain markdown you can read and edit:
+
+```
+specs/analytics/
+  README.md            # what the subsystem does + links to aspects
+  failed-searches.md   # one file per behavioral aspect
+  page-journeys.md
 ```
 
-```jsonc
-{ "status": "ok", "command": "new", "spec_dir": "./specs/urls",
-  "created": ["./specs/urls/README.md"] }   // ← a valid, code-free spec skeleton
-```
-
-Then ask your AI tool to expand the idea into behaviors — then `build` generates
-the code. Writing the spec first is **cheaper than refactoring later**.
-
-### ▸ Did my code drift from its spec?
-
-```bash
-npx @docsbook/specify verify ./specs/urls --graph ./graphify-out/graph.json
-```
-
-```jsonc
-{ "status": "drift", "total_triggers": 27, "covered": 23, "uncovered": 4 }
-// ← 4 behaviors the spec promises that have no matching code — your drift signal
-```
-
-### ▸ Just wire it into my AI tool
-
-```bash
-npx @docsbook/specify install     # → /specify in Claude Code, Cursor, or Codex
-```
+The CLI that powers all of this is documented [below](#cli-reference) — but for
+day-to-day use, you never need it.
 
 ---
 
@@ -105,12 +101,17 @@ for a real, validated spec.
 
 ---
 
-## The entry points
+<a id="cli-reference"></a>
+
+## CLI reference
+
+> For day-to-day use you don't need this — the installed skill drives the CLI for
+> you (see [Quick Start](#quick-start--install-once-then-just-ask)). This section
+> is for understanding the machinery, scripting, or CI.
 
 The CLI does the **deterministic half** (validate structure, build the
 trigger↔code coverage map). The generative steps are **AI tasks** your agent
-performs, reasoning over the CLI's JSON dossier. Install the skill and run them
-as `/specify …`, or drive the CLI directly.
+performs, reasoning over the CLI's JSON dossier.
 
 ### 0. Idea → spec (`new`) — greenfield
 

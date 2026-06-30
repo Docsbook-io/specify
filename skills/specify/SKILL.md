@@ -1,9 +1,9 @@
 ---
 name: specify
-description: Spec-driven development — reverse-engineer behavioral specs from code, scaffold code from specs, verify code↔spec conformance, and reflect on a spec before coding. A spec is "a codebase without the code": README + trigger-keyed files describing WHAT a system does, never HOW. Use when writing/validating behavioral specs, generating a spec from existing code, building code from a spec, or checking that code still matches its spec.
+description: Spec-driven development — a spec is "a codebase without the code": README + trigger-keyed files describing WHAT a system does, never HOW. USE THIS AUTOMATICALLY (no command needed) whenever a project has a specs/ directory and the user asks to add/change/fix/build any behavior: consult the spec first, reflect and ask if it's unclear, implement honoring its invariants, then update the spec in the same change — the user should not have to mention specs or say "update the spec". Also use to generate specs from existing code (reverse), scaffold a spec from an idea before any code (new), build code from a spec, verify code↔spec conformance, or validate spec structure.
 metadata:
   type: workflow
-  version: 0.4.0
+  version: 0.5.0
   keywords:
     - spec
     - specification
@@ -26,6 +26,33 @@ what a system *does* — its behaviors, invariants, edge cases — with **no fil
 paths, function names, types, or imports**. From a complete spec you could
 rebuild the project and get the same functionality. The spec is what stops the
 next change from silently breaking behavior.
+
+## Spec-first protocol — apply automatically, no command needed
+
+When this skill is installed and a `specs/` directory exists at the project root,
+**follow this protocol for any request that changes behavior** ("add X", "fix Y",
+"build Z", "change how W works") — the user does NOT have to mention specs, run a
+command, or say "update the spec". You do it under the hood:
+
+1. **Consult the spec first.** Before writing code, find the spec for the area
+   you're about to touch (`specify verify` / markdown-lsp search over `specs/`).
+   Read the behaviors and invariants it locks in.
+2. **Reflect, and ask if the spec is unclear or silent.** If the request
+   contradicts a stated behavior, or the spec doesn't cover the case, raise it
+   with the user *before* coding — a question now is cheaper than a broken
+   contract later. (`specify reflect` is the standing guide for this step.)
+3. **Then implement** — honoring every invariant the spec states; break no
+   behavior the spec promises unless the user explicitly approves changing it.
+4. **Update the spec in the same change**, automatically. If observable behavior
+   changed, edit the matching `specs/` file so the spec never lags the code. If a
+   brand-new behavior was added, add its trigger + description. Do this yourself;
+   the user should not have to ask.
+
+If no `specs/` exists yet and the user has a real project, offer to generate one
+first ("Generate specs for this project" → reverse flow below). For a greenfield
+idea, write the spec before the code (`new` flow). The point: **the spec is the
+working surface; code follows from it, and both stay in sync without the user
+managing it.**
 
 ## Spec format
 
