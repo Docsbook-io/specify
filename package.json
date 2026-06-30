@@ -1,6 +1,6 @@
 {
   "name": "@docsbook/specify",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Spec-driven CLI: reverse-engineer specs from code, verify code against specs, scaffold code from specs",
   "type": "module",
   "bin": {

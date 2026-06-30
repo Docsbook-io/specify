@@ -164,3 +164,98 @@ export function reflectGuide(): ReflectGuide {
     ],
   };
 }
+
+// ── new: idea → spec scaffold ────────────────────────────────────────────────
+
+export interface NewSpecResult {
+  status: 'ok' | 'error';
+  command: 'new';
+  spec_dir: string;
+  created: string[];
+  idea: string;
+  instructions: string[];
+  message?: string;
+}
+
+const NEW_INSTRUCTIONS = [
+  'There is NO code yet — this is greenfield. The spec is written FIRST; code is generated from it later (`specify build`).',
+  'Expand the idea into behaviors: for each thing the product DOES, write a heading that is a behavioral claim — what happens, when, under what conditions, what the caller gets back.',
+  'Split distinct concerns into aspect files (one file per subsystem/feature). Link them from README.md; each link is a `trigger → file` pair.',
+  'Fill every file\'s frontmatter `triggers:` array with the phrases a developer or AI would use to ask about that behavior — these are the lookup keys.',
+  'State invariants explicitly (what must always hold) and edge cases / error conditions (what happens when things go wrong).',
+  'Keep it code-free: no file paths, function names, types, frameworks, or libraries — describe WHAT, never HOW. Choosing the stack is the build step\'s job, not the spec\'s.',
+  'When done, run `specify spec validate <dir>` (must pass), then `specify build <dir>` to scaffold the code.',
+];
+
+/** Slugify an idea into a directory-name-safe spec folder name. */
+function slugify(text: string): string {
+  return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'spec';
+}
+
+/**
+ * Scaffold a brand-new spec directory from a one-line product idea — for the
+ * greenfield case where no code exists yet. Writes a minimal, valid spec
+ * skeleton (a README with placeholder triggers) and returns the instructions
+ * the AI skill follows to expand the idea into a full behavioral spec.
+ *
+ * The skeleton is deliberately minimal and code-free; the model does the
+ * expansion. We only guarantee the result is a structurally valid spec the
+ * agent can grow into.
+ */
+export function newSpec(idea: string, opts: { dir?: string } = {}): NewSpecResult {
+  const trimmed = idea.trim();
+  if (!trimmed) {
+    return {
+      status: 'error', command: 'new', spec_dir: '', created: [], idea,
+      instructions: NEW_INSTRUCTIONS, message: 'Usage: specify new "<one-line product idea>" [--dir <path>]',
+    };
+  }
+
+  const specDir = path.resolve(opts.dir ?? path.join('specs', slugify(trimmed)));
+  if (fs.existsSync(specDir) && fs.readdirSync(specDir).length > 0) {
+    return {
+      status: 'error', command: 'new', spec_dir: specDir, created: [], idea,
+      instructions: NEW_INSTRUCTIONS,
+      message: `Spec directory ${specDir} already exists and is not empty — choose another with --dir.`,
+    };
+  }
+
+  fs.mkdirSync(specDir, { recursive: true });
+  const title = trimmed.replace(/\.$/, '');
+  const readme = `---
+triggers:
+  - "${slugify(trimmed).replace(/-/g, ' ')}"
+---
+
+# ${title.charAt(0).toUpperCase() + title.slice(1)}
+
+> Greenfield spec scaffold. Expand each section below into behavioral claims,
+> then split distinct concerns into aspect files and link them here. Remove this
+> note when done. The spec must stay code-free.
+
+## Overview
+
+<!-- What does this product do, in one paragraph? What is its job? -->
+
+## Behaviors
+
+<!-- One heading per thing the product does. Each heading is a behavioral claim:
+     what happens, when, under what conditions, what the caller gets back. -->
+
+## Invariants
+
+<!-- What must ALWAYS hold true, regardless of input or state? -->
+
+## Edge cases & errors
+
+<!-- What happens when input is missing/invalid, a dependency fails, a limit is hit? -->
+`;
+  const readmePath = path.join(specDir, 'README.md');
+  fs.writeFileSync(readmePath, readme);
+
+  return {
+    status: 'ok', command: 'new', spec_dir: specDir,
+    created: [path.relative(process.cwd(), readmePath)], idea: trimmed,
+    instructions: NEW_INSTRUCTIONS,
+  };
+}

@@ -3,11 +3,13 @@ name: specify
 description: Spec-driven development — reverse-engineer behavioral specs from code, scaffold code from specs, verify code↔spec conformance, and reflect on a spec before coding. A spec is "a codebase without the code": README + trigger-keyed files describing WHAT a system does, never HOW. Use when writing/validating behavioral specs, generating a spec from existing code, building code from a spec, or checking that code still matches its spec.
 metadata:
   type: workflow
-  version: 0.2.0
+  version: 0.3.0
   keywords:
     - spec
     - specification
     - spec-driven
+    - greenfield
+    - idea-to-spec
     - reverse-engineer
     - code-generation
     - conformance
@@ -45,8 +47,26 @@ heading is a behavioral claim. See `examples/translation-behavior/`.
 ## The CLI does the deterministic half; you do the reasoning
 
 `@docsbook/specify` ships a CLI for the parts that need no model — validating
-spec structure and building the trigger↔code coverage map. The four generative
-entry points are AI tasks **you** perform, using the CLI's JSON dossier as input.
+spec structure and building the trigger↔code coverage map. The generative entry
+points are AI tasks **you** perform, using the CLI's JSON dossier as input.
+
+### 0. Idea → spec (new) — greenfield, no code yet
+
+When the user has only an idea and hasn't written code, it is **cheaper to write
+the spec first**, then generate code from it (`build`). Start here:
+
+```bash
+specify new "AI-powered habit tracker with streaks and reminders"
+# or pin the folder: specify new "<idea>" --dir ./specs/habits
+```
+
+The CLI scaffolds a valid, code-free spec skeleton (README with placeholder
+triggers + Overview / Behaviors / Invariants / Edge cases sections). Then, as the
+agent: **expand the idea into behavioral claims** — one heading per thing the
+product does, split distinct concerns into aspect files, fill every `triggers:`
+array, state invariants and edge cases. Keep it code-free: no stack, no
+frameworks, no signatures — choosing the stack is the `build` step's job. Finish
+with `specify spec validate` (must pass), then `specify build` to scaffold code.
 
 ### 1. Code → spec (reverse)
 
@@ -121,6 +141,7 @@ Prefer markdown-lsp search over reading whole spec files into context.
 
 | Command | Kind | What it does |
 |---|---|---|
+| `specify new "<idea>" [--dir <p>]` | scaffold | Create a brand-new spec from an idea — no code yet (greenfield) |
 | `specify spec validate <dir>` | deterministic | Validate spec structure (triggers, links, no-code) |
 | `specify verify <spec> [--graph <p>]` | deterministic | Coverage map: triggers ↔ graphify nodes |
 | `specify reverse <code-dir> [--graph <p>]` | dossier→AI | Clustered code symbols to turn into spec files |

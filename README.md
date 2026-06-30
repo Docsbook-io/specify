@@ -58,12 +58,26 @@ for a real, validated spec.
 
 ---
 
-## The four entry points
+## The entry points
 
 The CLI does the **deterministic half** (validate structure, build the
-trigger↔code coverage map). The four generative steps are **AI tasks** your
-agent performs, reasoning over the CLI's JSON dossier. Install the skill and run
-them as `/specify …`, or drive the CLI directly.
+trigger↔code coverage map). The generative steps are **AI tasks** your agent
+performs, reasoning over the CLI's JSON dossier. Install the skill and run them
+as `/specify …`, or drive the CLI directly.
+
+### 0. Idea → spec (`new`) — greenfield
+
+Only have an idea? It's **cheaper to write the spec first**, then generate the
+code from it. No code required.
+
+```bash
+npx @docsbook/specify new "AI-powered habit tracker with streaks and reminders"
+```
+
+Scaffolds a valid, code-free spec skeleton. The agent then expands the idea into
+behavioral claims — splitting concerns into aspect files, filling `triggers:`,
+stating invariants and edge cases — without naming any stack or framework
+(that's the `build` step's job). Then `validate`, then `build`.
 
 ### 1. Code → spec (`reverse`)
 
@@ -127,6 +141,7 @@ npx markdown-lsp links-from ./specs/my-feature README.md
 
 | Command | Kind | Description |
 |---|---|---|
+| `specify new "<idea>" [--dir <p>]` | scaffold | Create a brand-new spec from an idea — no code yet (greenfield) |
 | `specify install [dir]` | setup | Install the skill + `/specify` command into Claude / Cursor / Codex |
 | `specify spec validate <dir>` | deterministic | Lint spec structure — triggers present, links resolve, no code leaks |
 | `specify verify <spec> [--graph <p>] [--threshold <n>]` | deterministic | Coverage map: triggers ↔ graphify code-graph nodes |

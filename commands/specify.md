@@ -16,6 +16,8 @@ reasoning over the CLI's JSON dossier.
 ## Entry points
 
 ```
+/specify new "<idea>"           idea → spec   — greenfield: no code yet; scaffold a
+                                spec, then expand the idea into behaviors
 /specify reverse <code-dir>     code → spec   — graphify the code, then turn each
                                 cluster into a behavioral spec file
 /specify build <spec-dir>       spec → code   — implement every trigger, honoring
@@ -28,6 +30,9 @@ reasoning over the CLI's JSON dossier.
 
 ## How to run each
 
+0. **new** (greenfield) — `specify new "<idea>"` scaffolds a code-free spec
+   skeleton. Expand each section into behavioral claims, split concerns into
+   aspect files, fill every `triggers:` array. Then `validate`, then `build`.
 1. **reverse** — `graphify ./src` (graphify skill) → `specify reverse ./src
    --graph ./graphify-out/graph.json`. For each cluster in the dossier, write one
    code-free spec file with a `triggers:` array. Finish with `specify spec validate`.
