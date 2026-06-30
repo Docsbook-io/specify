@@ -99,6 +99,14 @@ behaviors, invariants, edge cases — with **no file paths, function names, type
 or imports**. It is the contract that stops the next change from breaking
 behavior.
 
+> **The bar is rebuildability:** a complete spec captures enough behavior that
+> someone could **reconstruct the project from the spec alone** and get the same
+> functionality. That means the business rules too — plan/tier gating, pricing,
+> limits, permissions — not just the structure. When generating a spec from code,
+> specify reads the *file bodies*, not just symbol names, precisely so these rules
+> (which live inside functions) don't get dropped. If a rule isn't in the spec, it
+> doesn't exist for whoever rebuilds from it.
+
 ```
 my-module/
   README.md        # frontmatter `triggers:` + behavior overview, links to aspects

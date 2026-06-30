@@ -3,7 +3,7 @@ name: specify
 description: Spec-driven development — a spec is "a codebase without the code": README + trigger-keyed files describing WHAT a system does, never HOW. USE THIS AUTOMATICALLY (no command needed) whenever a project has a specs/ directory and the user asks to add/change/fix/build any behavior: consult the spec first, reflect and ask if it's unclear, implement honoring its invariants, then update the spec in the same change — the user should not have to mention specs or say "update the spec". Also use to generate specs from existing code (reverse), scaffold a spec from an idea before any code (new), build code from a spec, verify code↔spec conformance, or validate spec structure.
 metadata:
   type: workflow
-  version: 0.6.0
+  version: 0.7.0
   keywords:
     - spec
     - specification
@@ -116,6 +116,18 @@ into `examples/`). For each cluster, write one behavioral spec file describing
 what those symbols do — strip every code reference, add a `triggers:` array, link
 the files under a root README. Finish with `specify spec validate ./specs/<subsystem>`
 (must pass).
+
+> **Read the file bodies — don't spec from names alone.** The dossier gives you
+> symbol *names*; the behavior lives *inside* the code. The completeness bar is
+> **rebuildability**: someone must be able to reconstruct the system from the spec
+> alone. So open the files and capture the rules hiding in function bodies —
+> **plan/tier/subscription gating** (free vs paid capabilities, pricing),
+> permission checks, quotas, rate limits, feature flags, defaults, validation,
+> and every error/edge path. A name-only pass silently drops exactly this
+> business logic — and it's the part that matters most. After writing, sanity-
+> check: *could a stranger rebuild this from my spec and get the same product?*
+> If a business rule (e.g. "only Pro+ can query raw events") isn't written down,
+> it doesn't exist for the rebuilder.
 
 ### 2. Spec → code (build)
 

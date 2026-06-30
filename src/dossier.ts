@@ -65,6 +65,9 @@ function findGraph(codeDir: string, explicit?: string): string | null {
 
 const REVERSE_INSTRUCTIONS = [
   'Write the spec into a `specs/` directory at the ROOT of the project being analyzed (e.g. specs/<subsystem>/) — never anywhere else. This is always the destination.',
+  'READ THE FILE BODIES — do not spec from symbol names alone. The dossier lists symbols (names, files); the BEHAVIOR lives inside the code. Open each cluster\'s files and read the logic: branches, conditions, constants, guards, limits, defaults, error paths.',
+  'The completeness bar is REBUILDABILITY: someone must be able to reconstruct this system from the spec ALONE and get the same functionality. If a behavior is not in the spec, it does not exist for the rebuilder. Capture business rules, not just structure.',
+  'Especially capture rules that hide INSIDE function bodies: plan/tier/subscription gating (who can do what on free vs paid), permission & access checks, quotas & rate limits, pricing, feature flags, default values, validation rules, and what happens on each error/edge case. These are the first things a name-only pass misses — and the most important to get right.',
   'For each cluster, write one behavioral spec file describing WHAT those symbols do — never HOW.',
   'Strip all code: no file paths, function names, class names, types, or imports in the spec.',
   'Give each spec file a frontmatter `triggers:` array — the phrases a developer/AI would use to ask about this behavior.',
